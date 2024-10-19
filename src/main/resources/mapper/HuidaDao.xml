@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.HuidaDao">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.zuoye_id as zuoyeId
+        ,a.yonghu_id as yonghuId
+        ,a.huifu_file as huifuFile
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.HuidaView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,yonghu.yonghu_name as yonghuName
+        ,yonghu.yonghu_phone as yonghuPhone
+        ,yonghu.yonghu_id_number as yonghuIdNumber
+        ,yonghu.yonghu_photo as yonghuPhoto
+        ,yonghu.yonghu_email as yonghuEmail
+        ,yonghu.banji_types as banjiTypes
+        ,zuoye.zuoye_uuid_number as zuoyeUuidNumber
+        ,zuoye.zuoye_name as zuoyeName
+        ,zuoye.zuoye_types as zuoyeTypes
+        ,zuoye.banji_types as banjiTypes
+        ,zuoye.zuoye_file as zuoyeFile
+        ,zuoye.zuoye_content as zuoyeContent
+
+        FROM huida  a
+        left JOIN yonghu yonghu ON a.yonghu_id = yonghu.id
+        left JOIN zuoye zuoye ON a.zuoye_id = zuoye.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test="params.zuoyeId != null and params.zuoyeId != ''">
+                and a.zuoye_id = #{params.zuoyeId}
+            </if>
+            <if test="params.yonghuId != null and params.yonghuId != ''">
+                and a.yonghu_id = #{params.yonghuId}
+            </if>
+
+                <!-- 判断学生的id不为空 -->
+            <if test=" params.yonghuIdNotNull != '' and params.yonghuIdNotNull != null and params.yonghuIdNotNull != 'null' ">
+                and a.yonghu_id IS NOT NULL
+            </if>
+            <if test=" params.yonghuName != '' and params.yonghuName != null and params.yonghuName != 'null' ">
+                and yonghu.yonghu_name like CONCAT('%',#{params.yonghuName},'%')
+            </if>
+            <if test=" params.yonghuPhone != '' and params.yonghuPhone != null and params.yonghuPhone != 'null' ">
+                and yonghu.yonghu_phone like CONCAT('%',#{params.yonghuPhone},'%')
+            </if>
+            <if test=" params.yonghuIdNumber != '' and params.yonghuIdNumber != null and params.yonghuIdNumber != 'null' ">
+                and yonghu.yonghu_id_number like CONCAT('%',#{params.yonghuIdNumber},'%')
+            </if>
+            <if test=" params.yonghuEmail != '' and params.yonghuEmail != null and params.yonghuEmail != 'null' ">
+                and yonghu.yonghu_email like CONCAT('%',#{params.yonghuEmail},'%')
+            </if>
+
+                <!-- 判断作业的id不为空 -->
+            <if test=" params.zuoyeIdNotNull != '' and params.zuoyeIdNotNull != null and params.zuoyeIdNotNull != 'null' ">
+                and a.zuoye_id IS NOT NULL
+            </if>
+            <if test="params.laoshiId != null  and params.laoshiId != ''">
+                and zuoye.laoshi_id = #{params.laoshiId}
+            </if>
+            <if test=" params.zuoyeUuidNumber != '' and params.zuoyeUuidNumber != null and params.zuoyeUuidNumber != 'null' ">
+                and zuoye.zuoye_uuid_number like CONCAT('%',#{params.zuoyeUuidNumber},'%')
+            </if>
+            <if test=" params.zuoyeName != '' and params.zuoyeName != null and params.zuoyeName != 'null' ">
+                and zuoye.zuoye_name like CONCAT('%',#{params.zuoyeName},'%')
+            </if>
+            <if test="params.zuoyeTypes != null  and params.zuoyeTypes != ''">
+                and zuoye.zuoye_types = #{params.zuoyeTypes}
+            </if>
+
+            <if test="params.banjiTypes != null  and params.banjiTypes != ''">
+                and zuoye.banji_types = #{params.banjiTypes}
+            </if>
+
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(zuoye.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(zuoye.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+            <if test=" params.zuoyeContent != '' and params.zuoyeContent != null and params.zuoyeContent != 'null' ">
+                and zuoye.zuoye_content like CONCAT('%',#{params.zuoyeContent},'%')
+            </if>
+        </where>
+
+        order by a.${params.orderBy} desc 
+    </select>
+
+</mapper>

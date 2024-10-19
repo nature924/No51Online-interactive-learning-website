@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.KechengshipinDao">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.kecheng_id as kechengId
+        ,a.kechengshipin_name as kechengshipinName
+        ,a.kechengshipin_photo as kechengshipinPhoto
+        ,a.kechengshipin_video as kechengshipinVideo
+        ,a.kechengshipin_file as kechengshipinFile
+        ,a.shangpin_content as shangpinContent
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.KechengshipinView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,kecheng.kecheng_name as kechengName
+        ,kecheng.kecheng_photo as kechengPhoto
+        ,kecheng.kecheng_types as kechengTypes
+        ,kecheng.kecheng_content as kechengContent
+
+        FROM kechengshipin  a
+        left JOIN kecheng kecheng ON a.kecheng_id = kecheng.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test="params.kechengId != null and params.kechengId != ''">
+                and a.kecheng_id = #{params.kechengId}
+            </if>
+            <if test=" params.kechengshipinName != '' and params.kechengshipinName != null and params.kechengshipinName != 'null' ">
+                and a.kechengshipin_name like CONCAT('%',#{params.kechengshipinName},'%')
+            </if>
+            <if test=" params.kechengshipinVideo != '' and params.kechengshipinVideo != null and params.kechengshipinVideo != 'null' ">
+                and a.kechengshipin_video like CONCAT('%',#{params.kechengshipinVideo},'%')
+            </if>
+            <if test=" params.shangpinContent != '' and params.shangpinContent != null and params.shangpinContent != 'null' ">
+                and a.shangpin_content like CONCAT('%',#{params.shangpinContent},'%')
+            </if>
+
+                <!-- 判断课程的id不为空 -->
+            <if test=" params.kechengIdNotNull != '' and params.kechengIdNotNull != null and params.kechengIdNotNull != 'null' ">
+                and a.kecheng_id IS NOT NULL
+            </if>
+            <if test=" params.kechengName != '' and params.kechengName != null and params.kechengName != 'null' ">
+                and kecheng.kecheng_name like CONCAT('%',#{params.kechengName},'%')
+            </if>
+            <if test="params.kechengTypes != null  and params.kechengTypes != ''">
+                and kecheng.kecheng_types = #{params.kechengTypes}
+            </if>
+
+            <if test=" params.kechengContent != '' and params.kechengContent != null and params.kechengContent != 'null' ">
+                and kecheng.kecheng_content like CONCAT('%',#{params.kechengContent},'%')
+            </if>
+        </where>
+
+        order by a.${params.orderBy} desc 
+    </select>
+
+</mapper>
